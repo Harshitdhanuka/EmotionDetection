@@ -1,8 +1,5 @@
 package com.example.EmotionDetection;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
@@ -12,6 +9,9 @@ import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
@@ -19,8 +19,12 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
+import java.io.IOException;
+
 public class CameraActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2{
     private static final String TAG="MainActivity";
+    // call java class
+    private facialExpressionRecognition facialExpressionRecognition ;
 
     private Mat mRgba;
     private Mat mGray;
@@ -67,6 +71,14 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
 
+        try {
+// input size of model is 48
+            int inputSize = 48 ;
+            facialExpressionRecognition = new facialExpressionRecognition ( getAssets(), CameraActivity.this , "model.tflite" , inputSize) ;
+        }
+        catch ( IOException e ) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -110,7 +122,7 @@ public class CameraActivity extends Activity implements CameraBridgeViewBase.CvC
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
         mRgba=inputFrame.rgba();
         mGray=inputFrame.gray();
-
+        mRgba=facialExpressionRecognition.recognizeImage(mRgba);
         return mRgba;
 
     }
